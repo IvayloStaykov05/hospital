@@ -1,12 +1,21 @@
 import repository.ExaminationTypeRepository;
+import repository.SpecialtyRepository;
+import repository.StatusRepository;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+
 public class Main {
     public static void main(String[] args) {
         ExaminationTypeRepository examinationTypeRepository= new ExaminationTypeRepository();
-        examinationTypeRepository.initializeExaminationType();
+        StatusRepository statusRepository = new StatusRepository();
+        SpecialtyRepository specialtyRepository = new SpecialtyRepository();
 
-        System.out.println("🎯 Приложението стартира успешно!");
+
+        examinationTypeRepository.initializeExaminationType();
+        statusRepository.initializeStatuses();
+        specialtyRepository.initializeSpecialties();
+
+        System.out.println("Приложението стартира успешно!");
+
+
     }
 }
