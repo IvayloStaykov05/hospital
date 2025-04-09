@@ -47,4 +47,27 @@ public class SpecialtyRepository {
             System.out.println("Таблицата 'statuses' вече съдържа записи.");
         }
     }
+    public Specialty getSpecialtyById(int id){
+        String sql = "SELECT * FROM specialties WHERE id = ?";
+
+        try(Connection conn = DBConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)){
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()){
+                String name = rs.getString("name");
+                for (SpecialtyEnum enumValue : SpecialtyEnum.values()){
+                    if (enumValue.getName().equalsIgnoreCase(name)){
+                        return new Specialty(id, enumValue);
+                    }
+                }
+            }
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
