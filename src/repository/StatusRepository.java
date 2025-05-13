@@ -49,4 +49,50 @@ public class StatusRepository {
             System.out.println("Таблицата 'statuses' вече съдържа записи.");
         }
     }
+
+    public Status getStatusById(int id) {
+        String sql = "SELECT * FROM statuses WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String name = rs.getString("name");
+                for (StatusEnum se : StatusEnum.values()) {
+                    if (se.getName().equalsIgnoreCase(name)) {
+                        return new Status(id, se);
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public Status getStatusByEnum(StatusEnum statusEnum) {
+        String sql = "SELECT * FROM statuses WHERE name = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, statusEnum.getName());
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int id = rs.getInt("id");
+                return new Status(id, statusEnum);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

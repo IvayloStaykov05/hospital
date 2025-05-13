@@ -61,4 +61,26 @@ public class DoctorRepository {
             e.printStackTrace();
         }
     }
+
+    public Doctor findByIdNameAndPassword(int doctorId, String firstName, String password) {
+        String sql = "SELECT * FROM doctors WHERE id = ? AND first_name = ? AND password = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, doctorId);
+            stmt.setString(2, firstName);
+            stmt.setString(3, password);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return getDoctorById(doctorId);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

@@ -50,4 +50,58 @@ public class PatientRepository {
 
         return patients;
     }
+    public Patient getPatientById(int id) {
+        String sql = "SELECT * FROM patients WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Patient(
+                        rs.getInt("id"),
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getString("email"),
+                        rs.getString("phone_number"),
+                        rs.getInt("age")
+                );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public Patient findByIdAndFirstName(int id, String firstName) {
+        String sql = "SELECT * FROM patients WHERE id = ? AND first_name = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            stmt.setString(2, firstName);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Patient(
+                        rs.getInt("id"),
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getString("email"),
+                        rs.getString("phone_number"),
+                        rs.getInt("age")
+                );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

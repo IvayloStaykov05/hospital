@@ -46,4 +46,28 @@ public class ExaminationTypeRepository {
             System.out.println("Таблицата 'statuses' вече съдържа записи.");
         }
     }
+    public ExaminationType getExaminationTypeById(int id) {
+        String sql = "SELECT * FROM examinations_type WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String name = rs.getString("name");
+                for (ExaminationTypeEnum type : ExaminationTypeEnum.values()) {
+                    if (type.getName().equalsIgnoreCase(name)) {
+                        return new ExaminationType(id, type);
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
