@@ -193,5 +193,40 @@ public class AppointmentRepository {
 
         return appointments;
     }
+    public boolean isDoctorAvailable(int doctorId, LocalDateTime dateTime) {
+        String sql = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND date_time = ? AND status_id != ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+            stmt.setInt(1, doctorId);
+            stmt.setTimestamp(2, Timestamp.valueOf(dateTime));
+            stmt.setInt(3, new StatusRepository().getStatusByEnum(StatusEnum.CANCELED).getId());
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) == 0;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public Appointment getAppointmentById(int appointmentId) {
+        String sql = "SELECT * FROM appointments WHERE id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, appointmentId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return extractAppointmentFromResultSet(rs);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

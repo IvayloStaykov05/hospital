@@ -2,6 +2,7 @@ package models;
 
 public class Doctor extends BasePerson {
     private Specialty specialty;
+    private String password;
 
     public Doctor(int id, String firstName, String lastName, String email, String phoneNumber, Specialty specialty) {
         super(id, firstName, lastName, email, phoneNumber);
@@ -14,5 +15,13 @@ public class Doctor extends BasePerson {
 
     public void setSpecialty(Specialty specialty) {
         this.specialty = specialty;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

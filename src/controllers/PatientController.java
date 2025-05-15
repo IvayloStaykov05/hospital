@@ -41,7 +41,6 @@ public class PatientController {
         }
 
         System.out.println("Здравейте, " + loggedPatient.getFirstName() + "!");
-
         showMenu(scanner, loggedPatient);
     }
 
@@ -72,15 +71,13 @@ public class PatientController {
                     break;
                 case "0":
                     return;
-                default:
-                    System.out.println("Невалиден избор. Опитайте отново.");
+                default: System.out.println("Невалиден избор.");
             }
         }
     }
 
     private void showAppointments(Patient patient) {
         List<Appointment> appointments = appointmentRepository.getAppointmentsByPatientId(patient.getId());
-
         if (appointments.isEmpty()) {
             System.out.println("Нямате записани часове.");
             return;
@@ -112,17 +109,23 @@ public class PatientController {
         for (ExaminationTypeEnum type : ExaminationTypeEnum.values()) {
             System.out.println(type.ordinal() + 1 + ". " + type.getName());
         }
-        int typeChoice = Integer.parseInt(scanner.nextLine());
 
+        int typeChoice = Integer.parseInt(scanner.nextLine());
         if (typeChoice < 1 || typeChoice > ExaminationTypeEnum.values().length) {
-            System.out.println("Невалиден избор на тип преглед.");
+            System.out.println("Невалиден избор.");
             return;
         }
 
         ExaminationTypeEnum selectedType = ExaminationTypeEnum.values()[typeChoice - 1];
 
-        System.out.print("Въведете дата и час във формат (YYYY-MM-DDTHH:MM): ");
+        System.out.print("Въведете дата и час (формат YYYY-MM-DDTHH:MM): ");
         LocalDateTime dateTime = LocalDateTime.parse(scanner.nextLine());
+
+        // Проверка за заетост
+        if (!appointmentRepository.isDoctorAvailable(doctorId, dateTime)) {
+            System.out.println("Лекарят вече има записан час по това време.");
+            return;
+        }
 
         Appointment appointment = new Appointment(
                 0,
@@ -140,8 +143,20 @@ public class PatientController {
         System.out.print("Въведете ID на часа, който искате да промените: ");
         int appointmentId = Integer.parseInt(scanner.nextLine());
 
+        Appointment appointment = appointmentRepository.getAppointmentById(appointmentId);
+        if (appointment == null) {
+            System.out.println("Часът не съществува.");
+            return;
+        }
+
         System.out.print("Въведете нова дата и час (YYYY-MM-DDTHH:MM): ");
         LocalDateTime newDateTime = LocalDateTime.parse(scanner.nextLine());
+
+        // Проверка за заетост
+        if (!appointmentRepository.isDoctorAvailable(appointment.getDoctor().getId(), newDateTime)) {
+            System.out.println("Лекарят вече има друг час по това време.");
+            return;
+        }
 
         System.out.println("Сигурни ли сте, че искате да промените този час? (да/не): ");
         if (!scanner.nextLine().equalsIgnoreCase("да")) {
