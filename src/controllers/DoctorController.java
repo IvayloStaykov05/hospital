@@ -2,6 +2,7 @@ package controllers;
 
 import models.Appointment;
 import models.Doctor;
+import models.Patient;
 import models.enums.StatusEnum;
 import repository.AppointmentRepository;
 import repository.DoctorRepository;
@@ -137,6 +138,25 @@ public class DoctorController {
                 default:
                     System.out.println("Невалиден избор. Опитайте отново.");
             }
+        }
+    }
+    private void showAppointments(Patient patient) {
+        List<Appointment> appointments = appointmentRepository.getAppointmentsByPatientId(patient.getId());
+
+        if (appointments.isEmpty()) {
+            System.out.println("Нямате записани часове.");
+            return;
+        }
+
+        appointments.sort((a1, a2) -> a1.getDateTime().compareTo(a2.getDateTime()));
+
+        for (Appointment app : appointments) {
+            System.out.println("Час ID: " + app.getId());
+            System.out.println("Дата/час: " + app.getDateTime());
+            System.out.println("Лекар: " + app.getDoctor().getFirstName() + " " + app.getDoctor().getLastName());
+            System.out.println("Преглед: " + app.getExaminationType().getExaminationTypeEnum().getName());
+            System.out.println("Статус: " + app.getStatus().getStatusEnum().getName());
+            System.out.println("-------------------------");
         }
     }
 }
