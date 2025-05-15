@@ -5,6 +5,7 @@ import models.enums.StatusEnum;
 import utils.DBConnection;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -140,4 +141,57 @@ public class AppointmentRepository {
 
         return new Appointment(id, patient, doctor, examination, dateTime, status);
     }
+
+    public List<Appointment> getAppointmentsByDoctorIdAndStatus(int doctorId, StatusEnum statusEnum) {
+        List<Appointment> appointments = new ArrayList<>();
+        String sql = "SELECT * FROM appointments WHERE doctor_id = ? AND status_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int statusId = new StatusRepository().getStatusByEnum(statusEnum).getId();
+            stmt.setInt(1, doctorId);
+            stmt.setInt(2, statusId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                appointments.add(extractAppointmentFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return appointments;
+    }
+
+    public List<Appointment> getAppointmentsForTodayByDoctorId(int doctorId) {
+        List<Appointment> appointments = new ArrayList<>();
+
+        String sql = "SELECT * FROM appointments WHERE doctor_id = ? AND date_time >= ? AND date_time < ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+            LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+            stmt.setInt(1, doctorId);
+            stmt.setTimestamp(2, Timestamp.valueOf(startOfDay));
+            stmt.setTimestamp(3, Timestamp.valueOf(endOfDay));
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                appointments.add(extractAppointmentFromResultSet(rs));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return appointments;
+    }
+
 }

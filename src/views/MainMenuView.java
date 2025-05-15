@@ -24,7 +24,7 @@ public class MainMenuView {
 
             switch (input) {
                 case "1":
-                    // TODO: new PatientController().start(scanner);
+                    //TODO: new PatientController().start(scanner);
                     break;
                 case "2":
                     new DoctorController().start(scanner);
