@@ -121,7 +121,6 @@ public class PatientController {
         System.out.print("Въведете дата и час (формат YYYY-MM-DDTHH:MM): ");
         LocalDateTime dateTime = LocalDateTime.parse(scanner.nextLine());
 
-        // Проверка за заетост
         if (!appointmentRepository.isDoctorAvailable(doctorId, dateTime)) {
             System.out.println("Лекарят вече има записан час по това време.");
             return;
@@ -152,7 +151,6 @@ public class PatientController {
         System.out.print("Въведете нова дата и час (YYYY-MM-DDTHH:MM): ");
         LocalDateTime newDateTime = LocalDateTime.parse(scanner.nextLine());
 
-        // Проверка за заетост
         if (!appointmentRepository.isDoctorAvailable(appointment.getDoctor().getId(), newDateTime)) {
             System.out.println("Лекарят вече има друг час по това време.");
             return;
