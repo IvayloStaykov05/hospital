@@ -159,4 +159,5 @@ public class DoctorController {
             System.out.println("-------------------------");
         }
     }
+    // TODO: Доктора да отменя часовее
 }

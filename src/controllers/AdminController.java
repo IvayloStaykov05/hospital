@@ -16,8 +16,8 @@ public class AdminController {
     private final PatientRepository patientRepository = new PatientRepository();
     private final SpecialtyRepository specialtyRepository = new SpecialtyRepository();
 
-    private final String ADMIN_USERNAME = "admin";
-    private final String ADMIN_PASSWORD = "1234";
+    private final String ADMIN_USERNAME = "";
+    private final String ADMIN_PASSWORD = "";
 
     public void start(Scanner scanner) {
         System.out.println("\n=== Вход като Администратор ===");
