@@ -31,7 +31,8 @@ public class DoctorRepository {
                     specialty = specialtyRepository.getSpecialtyById(specialtyId);
 
                 }
-                return new Doctor(id, firstName, lastName, email, phoneNumber, specialty);
+                String password = rs.getString("password");
+                return new Doctor(id, firstName, lastName, email, phoneNumber, specialty, password);
             }
         }
         catch(SQLException e){
@@ -41,7 +42,7 @@ public class DoctorRepository {
     }
 
     public void insertDoctor(Doctor doctor){
-        String sql= "INSERT INTO doctors (first_name, last_name, email, phone, specialty_id) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO doctors (first_name, last_name, email, phone, specialty_id, password) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql)){
@@ -56,6 +57,7 @@ public class DoctorRepository {
             }else{
                 stmt.setNull(5, Types.INTEGER);
             }
+            stmt.setString(6, doctor.getPassword());
 
             stmt.executeUpdate();
             System.out.println("Доктора е добавен успешно!");

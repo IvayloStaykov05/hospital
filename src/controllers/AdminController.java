@@ -108,7 +108,7 @@ public class AdminController {
         System.out.print("Парола: ");
         String password = scanner.nextLine();
 
-        Doctor doctor = new Doctor(0, firstName, lastName, email, phone, specialty);
+        Doctor doctor = new Doctor(0, firstName, lastName, email, phone, specialty, password);
         doctor.setPassword(password);
 
         doctorRepository.insertDoctor(doctor);
@@ -149,28 +149,53 @@ public class AdminController {
             System.out.println("Лекарят не е намерен.");
             return;
         }
-
         System.out.print("Ново име (" + doctor.getFirstName() + "): ");
-        doctor.setFirstName(scanner.nextLine());
+        String input = scanner.nextLine();
+        if (!input.isBlank()) doctor.setFirstName(input);
 
         System.out.print("Нова фамилия (" + doctor.getLastName() + "): ");
-        doctor.setLastName(scanner.nextLine());
+        input = scanner.nextLine();
+        if (!input.isBlank()) doctor.setLastName(input);
 
         System.out.print("Нов имейл (" + doctor.getEmail() + "): ");
-        doctor.setEmail(scanner.nextLine());
+        input = scanner.nextLine();
+        if (!input.isBlank()) doctor.setEmail(input);
 
         System.out.print("Нов телефон (" + doctor.getPhoneNumber() + "): ");
-        doctor.setPhoneNumber(scanner.nextLine());
+        input = scanner.nextLine();
+        if (!input.isBlank()) doctor.setPhoneNumber(input);
 
-        Specialty specialty = selectSpecialty(scanner);
-        if (specialty != null) doctor.setSpecialty(specialty);
+        System.out.println("Ако желаете да смените специалността, изберете от списъка. Ако не, натиснете Enter:");
+        for (SpecialtyEnum s : SpecialtyEnum.values()) {
+            System.out.println((s.ordinal() + 1) + ". " + s.getName());
+        }
+
+        input = scanner.nextLine();
+        if (!input.isBlank()) {
+            try {
+                int choice = Integer.parseInt(input);
+                if (choice >= 1 && choice <= SpecialtyEnum.values().length) {
+                    SpecialtyEnum selected = SpecialtyEnum.values()[choice - 1];
+                    doctor.setSpecialty(new Specialty(choice, selected));
+                } else {
+                    System.out.println("Невалиден избор. Специалността остава старата.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Невалиден формат. Специалността остава старата.");
+            }
+        }
 
         System.out.print("Нова парола: ");
-        doctor.setPassword(scanner.nextLine());
+        input = scanner.nextLine();
+        if (!input.isBlank()){ doctor.setPassword(input);}
+        else{
+            doctor.setPassword(doctor.getPassword());
+        }
 
         doctorRepository.updateDoctor(doctor);
         System.out.println("Лекарят беше обновен.");
     }
+
 
     private void searchPatients(Scanner scanner) {
         System.out.print("Въведете име или фамилия за търсене: ");
