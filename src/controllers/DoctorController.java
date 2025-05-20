@@ -134,7 +134,7 @@ public class DoctorController {
                     showTodayPatients(doctor);
                     break;
                 case "0":
-                    continue;
+                    break;
                 default:
                     System.out.println("Невалиден избор. Опитайте отново.");
             }
