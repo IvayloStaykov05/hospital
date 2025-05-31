@@ -20,29 +20,43 @@ public class PatientController {
 
     public void start(Scanner scanner) {
         System.out.println("\n=== Вход като Пациент ===");
-
         Patient loggedPatient = null;
 
-        while (loggedPatient == null) {
-            try {
-                System.out.print("Въведете вашето ID: ");
-                int id = Integer.parseInt(scanner.nextLine());
+        String response = "";
+        while (!response.equalsIgnoreCase("да") && !response.equalsIgnoreCase("не")) {
+            System.out.print("Регистрирани ли сте вече в системата? (да/не): ");
+            response = scanner.nextLine().trim().toLowerCase();
+            if (!response.equals("да") && !response.equals("не")) {
+                System.out.println("Моля, въведете само 'да' или 'не'.");
+            }
+        }
 
-                System.out.print("Въведете вашето първо име: ");
-                String firstName = scanner.nextLine().trim();
+        if (response.equals("не")) {
+            loggedPatient = addPatient(scanner);
+            System.out.println("Успешна регистрация. Вече сте влезли като: " + loggedPatient.getFirstName());
+        } else {
+            while (loggedPatient == null) {
+                try {
+                    System.out.print("Въведете вашето ID: ");
+                    int id = Integer.parseInt(scanner.nextLine());
 
-                loggedPatient = patientRepository.findByIdAndFirstName(id, firstName);
-                if (loggedPatient == null) {
-                    System.out.println("Невалидни данни. Опитайте отново.");
+                    System.out.print("Въведете вашето първо име: ");
+                    String firstName = scanner.nextLine().trim();
+
+                    loggedPatient = patientRepository.findByIdAndFirstName(id, firstName);
+                    if (loggedPatient == null) {
+                        System.out.println("Невалидни данни. Опитайте отново!");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("ID трябва да е число.");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("ID трябва да е число.");
             }
         }
 
         System.out.println("Здравейте, " + loggedPatient.getFirstName() + "!");
         showMenu(scanner, loggedPatient);
     }
+
 
     private void showMenu(Scanner scanner, Patient patient) {
         while (true) {
@@ -176,5 +190,30 @@ public class PatientController {
         }
 
         appointmentRepository.updateAppointmentStatus(appointmentId, StatusEnum.CANCELED);
+    }
+    private Patient addPatient(Scanner scanner) {
+        System.out.println("\n=== Добавяне на нов пациент ===");
+
+        System.out.print("Име: ");
+        String firstName = scanner.nextLine();
+
+        System.out.print("Фамилия: ");
+        String lastName = scanner.nextLine();
+
+        System.out.print("Възраст: ");
+        int age = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Имейл: ");
+        String email = scanner.nextLine();
+
+        System.out.print("Телефон: ");
+        String phone = scanner.nextLine();
+
+        Patient newPatient = new Patient(0, firstName, lastName, email, phone, age);
+        patientRepository.insertPatient(newPatient);
+
+        System.out.println("Пациентът беше успешно добавен.");
+
+        return newPatient;
     }
 }

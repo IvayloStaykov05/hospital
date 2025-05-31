@@ -48,6 +48,7 @@ public class AdminController {
             System.out.println("4. Виж всички пациенти");
             System.out.println("5. Промени данни за лекар");
             System.out.println("6. Търси пациент по име");
+            System.out.println("7. Добави нов пациент");
             System.out.println("0. Изход");
             System.out.print("Избор: ");
 

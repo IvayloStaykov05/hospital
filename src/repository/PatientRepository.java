@@ -104,4 +104,22 @@ public class PatientRepository {
 
         return null;
     }
+    public void insertPatient(Patient patient) {
+        String sql = "INSERT INTO patients (first_name, last_name, age, email, phone_number) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, patient.getFirstName());
+            stmt.setString(2, patient.getLastName());
+            stmt.setInt(3, patient.getAge());
+            stmt.setString(4, patient.getEmail());
+            stmt.setString(5, patient.getPhoneNumber());
+
+            stmt.executeUpdate();
+            System.out.println("Пациентът е добавен в базата данни.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

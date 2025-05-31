@@ -112,6 +112,7 @@ public class DoctorController {
             System.out.println("3. Преглед на отменени часове");
             System.out.println("4. Преглед на всички часове за деня");
             System.out.println("5. Преглед на информация за пациентите през деня");
+            System.out.println("6. Добави нов пациент");
             System.out.println("0. Назад към главното меню");
             System.out.print("Избор: ");
 

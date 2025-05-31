@@ -9,8 +9,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class AppointmentRepository {
+
+    private static final Logger logger = Logger.getLogger(AppointmentRepository.class.getName());
     private final PatientRepository patientRepository = new PatientRepository();
     private final DoctorRepository doctorRepository = new DoctorRepository();
     private final ExaminationTypeRepository examinationTypeRepository = new ExaminationTypeRepository();
@@ -32,7 +36,7 @@ public class AppointmentRepository {
             System.out.println("Часът беше записан успешно!");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при запис на час в базата данни", e);
         }
     }
 
@@ -51,7 +55,7 @@ public class AppointmentRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на часове по patient_id", e);
         }
 
         return appointments;
@@ -72,7 +76,7 @@ public class AppointmentRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на часове по doctor_id", e);
         }
 
         return appointments;
@@ -95,7 +99,7 @@ public class AppointmentRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при обновяване на дата/час за час", e);
         }
     }
 
@@ -122,7 +126,7 @@ public class AppointmentRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при обновяване на статус на час", e);
         }
     }
 
@@ -160,7 +164,7 @@ public class AppointmentRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на часове по статус и доктор", e);
         }
 
         return appointments;
@@ -188,7 +192,7 @@ public class AppointmentRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на днешните часове за лекар", e);
         }
 
         return appointments;
@@ -208,7 +212,7 @@ public class AppointmentRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при проверка на заетостта на лекар", e);
         }
         return false;
     }
@@ -225,7 +229,7 @@ public class AppointmentRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на час по ID", e);
         }
         return null;
     }
