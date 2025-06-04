@@ -2,12 +2,14 @@ package repository;
 
 import models.Doctor;
 import models.Specialty;
+import utils.PasswordUtil;
 import utils.DBConnection;
 import utils.LoggerConfig;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,7 +19,7 @@ public class DoctorRepository {
     static {
         LoggerConfig.configureLogger(logger);
     }
-
+    private Scanner scanner = new Scanner(String.valueOf(System.out));
     public Doctor getDoctorById(int id){
         String sql = "SELECT * FROM doctors WHERE id = ?";
 
@@ -66,7 +68,8 @@ public class DoctorRepository {
             }else{
                 stmt.setNull(5, Types.INTEGER);
             }
-            stmt.setString(6, doctor.getPassword());
+            String hashedPassword = PasswordUtil.hashPassword(doctor.getPassword());
+            stmt.setString(6, hashedPassword);
             stmt.executeUpdate();
 
             logger.info("Лекарят беше успешно добавен: " + doctor.getFirstName() + " " + doctor.getLastName());
@@ -77,20 +80,23 @@ public class DoctorRepository {
     }
 
     public Doctor findByIdNameAndPassword(int doctorId, String firstName, String password) {
-        String sql = "SELECT * FROM doctors WHERE id = ? AND first_name = ? AND password = ?";
+        String sql = "SELECT * FROM doctors WHERE id = ? AND first_name = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, doctorId);
             stmt.setString(2, firstName);
-            stmt.setString(3, password);
+
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return getDoctorById(doctorId);
-            }
+                String storedHashedPassword = rs.getString("password");
 
+                if (PasswordUtil.checkPassword(password, storedHashedPassword)) {
+                    return getDoctorById(doctorId);
+                }
+            }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Грешка при проверка на идентификационни данни на лекар", e);
         }
@@ -146,7 +152,14 @@ public class DoctorRepository {
                 stmt.setNull(5, java.sql.Types.INTEGER);
             }
 
-            stmt.setString(6, doctor.getPassword());
+            System.out.print("Нова парола (оставете празно ако не желаете промяна): ");
+            String passwordInput = scanner.nextLine();
+
+            if (!passwordInput.isBlank()) {
+                doctor.setPassword(PasswordUtil.hashPassword(passwordInput));
+            } else {
+                doctor.setPassword(getDoctorById(doctor.getId()).getPassword());
+            }
             stmt.setInt(7, doctor.getId());
 
             stmt.executeUpdate();

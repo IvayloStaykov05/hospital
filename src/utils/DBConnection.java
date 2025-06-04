@@ -9,6 +9,8 @@ public class DBConnection {
     private static final String USER = "root";
     private static final String PASSWORD = "1234";
 
+    //TODO: информацията за базата данни да се чете от файл
+
     //private static Connection connection;
 
     /*private DBConnection() {

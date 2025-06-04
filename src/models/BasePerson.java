@@ -5,13 +5,15 @@ public abstract class BasePerson extends BaseClass{
     protected String lastName;
     protected String email;
     protected String phoneNumber;
+    protected String password;
 
-    public BasePerson(int id, String firstName, String lastName, String email, String phoneNumber) {
+    public BasePerson(int id, String firstName, String lastName, String email, String phoneNumber, String password) {
         super(id);
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.password = password;
     }
 
     public String getFirstName() {
@@ -44,5 +46,13 @@ public abstract class BasePerson extends BaseClass{
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

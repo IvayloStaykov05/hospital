@@ -43,7 +43,10 @@ public class PatientController {
                     System.out.print("Въведете вашето първо име: ");
                     String firstName = scanner.nextLine().trim();
 
-                    loggedPatient = patientRepository.findByIdAndFirstName(id, firstName);
+                    System.out.print("Въведете парола: ");
+                    String password = scanner.nextLine().trim();
+
+                    loggedPatient = patientRepository.findByIdAndFirstName(id, firstName, password);
                     if (loggedPatient == null) {
                         System.out.println("Невалидни данни. Опитайте отново!");
                     }
@@ -209,7 +212,10 @@ public class PatientController {
         System.out.print("Телефон: ");
         String phone = scanner.nextLine();
 
-        Patient newPatient = new Patient(0, firstName, lastName, email, phone, age);
+        System.out.print("Парола: ");
+        String password = scanner.nextLine();
+
+        Patient newPatient = new Patient(0, firstName, lastName, email, phone, password, age);
         patientRepository.insertPatient(newPatient);
 
         System.out.println("Пациентът беше успешно добавен.");

@@ -19,6 +19,7 @@ public class AdminController {
     private final String ADMIN_USERNAME = "";
     private final String ADMIN_PASSWORD = "";
 
+    //TODO: информацията за admin да се чете от файл
     public void start(Scanner scanner) {
         System.out.println("\n=== Вход като Администратор ===");
 

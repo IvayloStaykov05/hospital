@@ -3,6 +3,7 @@ package repository;
 import models.Patient;
 import utils.DBConnection;
 import utils.LoggerConfig;
+import utils.PasswordUtil;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -17,24 +18,7 @@ public class PatientRepository {
         LoggerConfig.configureLogger(logger);
     }
 
-    public void addPatient(Patient patient) {
-        String sql = "INSERT INTO patients(first_name, last_name, age, phone_number, email) VALUES(?, ?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, patient.getFirstName());
-            stmt.setString(2, patient.getLastName());
-            stmt.setInt(3, patient.getAge());
-            stmt.setString(4, patient.getPhoneNumber());
-            stmt.setString(5, patient.getEmail());
 
-            stmt.executeUpdate();
-            logger.info("Пациентът е добавен успешно: " + patient.getFirstName() + " " + patient.getLastName());
-
-
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Грешка при добавяне на пациент", e);
-        }
-    }
     public List<Patient> getAllPatients(){
         List<Patient> patients = new ArrayList<>();
         String sql = "SELECT * FROM patients";
@@ -50,6 +34,7 @@ public class PatientRepository {
                         rs.getString("last_name"),
                         rs.getString("phone_number"),
                         rs.getString("email"),
+                        rs.getString("password"),
                         rs.getInt("age")
                 ));
             }
@@ -76,6 +61,7 @@ public class PatientRepository {
                         rs.getString("last_name"),
                         rs.getString("email"),
                         rs.getString("phone_number"),
+                        rs.getString("password"),
                         rs.getInt("age")
                 );
             }
@@ -87,7 +73,7 @@ public class PatientRepository {
         return null;
     }
 
-    public Patient findByIdAndFirstName(int id, String firstName) {
+    public Patient findByIdAndFirstName(int id, String firstName, String password) {
         String sql = "SELECT * FROM patients WHERE id = ? AND first_name = ?";
 
         try (Connection conn = DBConnection.getConnection();
@@ -98,24 +84,29 @@ public class PatientRepository {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return new Patient(
-                        rs.getInt("id"),
-                        rs.getString("first_name"),
-                        rs.getString("last_name"),
-                        rs.getString("email"),
-                        rs.getString("phone_number"),
-                        rs.getInt("age")
-                );
+                String hashedPassword = rs.getString("password");
+                if (PasswordUtil.checkPassword(password, hashedPassword)) {
+                    return new Patient(
+                            rs.getInt("id"),
+                            rs.getString("first_name"),
+                            rs.getString("last_name"),
+                            rs.getString("email"),
+                            rs.getString("phone_number"),
+                            hashedPassword,
+                            rs.getInt("age")
+                    );
+                }
             }
 
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Грешка при намиране на пациент по ID и първо име", e);
+            logger.log(Level.SEVERE, "Грешка при намиране на пациент по ID и име", e);
         }
 
         return null;
     }
+
     public void insertPatient(Patient patient) {
-        String sql = "INSERT INTO patients (first_name, last_name, age, email, phone_number) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO patients (first_name, last_name, age, email, phone_number, password) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -125,6 +116,8 @@ public class PatientRepository {
             stmt.setInt(3, patient.getAge());
             stmt.setString(4, patient.getEmail());
             stmt.setString(5, patient.getPhoneNumber());
+            String hashedPassword = PasswordUtil.hashPassword(patient.getPassword());
+            stmt.setString(6, hashedPassword);
 
             stmt.executeUpdate();
             logger.info("Пациентът беше успешно добавен: " + patient.getFirstName());
