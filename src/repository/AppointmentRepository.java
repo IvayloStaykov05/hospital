@@ -3,6 +3,7 @@ package repository;
 import models.*;
 import models.enums.StatusEnum;
 import utils.DBConnection;
+import utils.LoggerConfig;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -19,6 +20,10 @@ public class AppointmentRepository {
     private final DoctorRepository doctorRepository = new DoctorRepository();
     private final ExaminationTypeRepository examinationTypeRepository = new ExaminationTypeRepository();
     private final StatusRepository statusRepository = new StatusRepository();
+    static {
+        LoggerConfig.configureLogger(logger);
+    }
+
 
     public void insertAppointment(Appointment appointment) {
         String sql = "INSERT INTO appointments (patient_id, doctor_id, examination_id, date_time, status_id) VALUES (?, ?, ?, ?, ?)";

@@ -3,10 +3,20 @@ package repository;
 import models.ExaminationType;
 import models.enums.ExaminationTypeEnum;
 import utils.DBConnection;
+import utils.LoggerConfig;
 
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 public class ExaminationTypeRepository {
+
+    private static final Logger logger = Logger.getLogger(ExaminationTypeRepository.class.getName());
+    static {
+        LoggerConfig.configureLogger(logger);
+    }
+
     public void insertExaminationType(ExaminationType examinationType){
         String sql = "INSERT INTO examinations_type (name) VALUES (?)";
 
@@ -17,7 +27,7 @@ public class ExaminationTypeRepository {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при добавяне на тип преглед", e);
         }
     }
     public boolean hasExaminationType() {
@@ -31,7 +41,7 @@ public class ExaminationTypeRepository {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при проверка за типове преглед", e);
         }
         return false;
     }
@@ -65,7 +75,7 @@ public class ExaminationTypeRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на тип преглед по ID", e);
         }
 
         return null;

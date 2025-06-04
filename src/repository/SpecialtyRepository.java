@@ -3,10 +3,18 @@ package repository;
 import models.Specialty;
 import models.enums.SpecialtyEnum;
 import utils.DBConnection;
+import utils.LoggerConfig;
 
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SpecialtyRepository {
+
+    private static final Logger logger = Logger.getLogger(SpecialtyRepository.class.getName());
+    static {
+        LoggerConfig.configureLogger(logger);
+    }
 
     public void insertSpecialty(Specialty specialty){
         String sql = "INSERT INTO specialties (name) VALUES (?)";
@@ -18,7 +26,7 @@ public class SpecialtyRepository {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при добавяне на специалност", e);
         }
     }
     public boolean hasSpecialty() {
@@ -32,7 +40,7 @@ public class SpecialtyRepository {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при проверка за налични специалности", e);
         }
         return false;
     }
@@ -66,7 +74,7 @@ public class SpecialtyRepository {
             }
 
         }catch (SQLException e){
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на специалност по ID", e);
         }
         return null;
     }

@@ -3,12 +3,21 @@ package repository;
 import models.Doctor;
 import models.Specialty;
 import utils.DBConnection;
+import utils.LoggerConfig;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DoctorRepository {
+
+    private static final Logger logger = Logger.getLogger(DoctorRepository.class.getName());
+    static {
+        LoggerConfig.configureLogger(logger);
+    }
+
     public Doctor getDoctorById(int id){
         String sql = "SELECT * FROM doctors WHERE id = ?";
 
@@ -36,7 +45,7 @@ public class DoctorRepository {
             }
         }
         catch(SQLException e){
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при търсене на лекар по ID: " + id, e);
         }
      return null;
     }
@@ -58,11 +67,12 @@ public class DoctorRepository {
                 stmt.setNull(5, Types.INTEGER);
             }
             stmt.setString(6, doctor.getPassword());
-
             stmt.executeUpdate();
-            System.out.println("Доктора е добавен успешно!");
+
+            logger.info("Лекарят беше успешно добавен: " + doctor.getFirstName() + " " + doctor.getLastName());
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при добавяне на лекар: " + doctor.getFirstName(), e);
         }
     }
 
@@ -82,7 +92,7 @@ public class DoctorRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при проверка на идентификационни данни на лекар", e);
         }
 
         return null;
@@ -100,7 +110,7 @@ public class DoctorRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при зареждане на всички лекари", e);
         }
 
         return doctors;
@@ -114,9 +124,10 @@ public class DoctorRepository {
 
             stmt.setInt(1, id);
             stmt.executeUpdate();
+            logger.info("Лекарят с ID " + id + " беше изтрит.");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при изтриване на лекар с ID: " + id, e);
         }
     }
     public void updateDoctor(Doctor doctor) {
@@ -139,8 +150,9 @@ public class DoctorRepository {
             stmt.setInt(7, doctor.getId());
 
             stmt.executeUpdate();
+            logger.info("Лекарят с ID " + doctor.getId() + " беше успешно обновен.");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при обновяване на лекар с ID: " + doctor.getId(), e);
         }
     }
 }

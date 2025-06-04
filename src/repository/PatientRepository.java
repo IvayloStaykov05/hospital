@@ -2,12 +2,21 @@ package repository;
 
 import models.Patient;
 import utils.DBConnection;
+import utils.LoggerConfig;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PatientRepository {
+
+    private static final Logger logger = Logger.getLogger(PatientRepository.class.getName());
+    static {
+        LoggerConfig.configureLogger(logger);
+    }
+
     public void addPatient(Patient patient) {
         String sql = "INSERT INTO patients(first_name, last_name, age, phone_number, email) VALUES(?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -19,10 +28,11 @@ public class PatientRepository {
             stmt.setString(5, patient.getEmail());
 
             stmt.executeUpdate();
-            System.out.println("Пациента е добавен успешно.");
+            logger.info("Пациентът е добавен успешно: " + patient.getFirstName() + " " + patient.getLastName());
+
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при добавяне на пациент", e);
         }
     }
     public List<Patient> getAllPatients(){
@@ -45,7 +55,7 @@ public class PatientRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при зареждане на всички пациенти", e);
         }
 
         return patients;
@@ -71,7 +81,7 @@ public class PatientRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на пациент по ID: " + id, e);
         }
 
         return null;
@@ -99,7 +109,7 @@ public class PatientRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при намиране на пациент по ID и първо име", e);
         }
 
         return null;
@@ -117,9 +127,9 @@ public class PatientRepository {
             stmt.setString(5, patient.getPhoneNumber());
 
             stmt.executeUpdate();
-            System.out.println("Пациентът е добавен в базата данни.");
+            logger.info("Пациентът беше успешно добавен: " + patient.getFirstName());
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при записване на пациент в базата", e);
         }
     }
 }

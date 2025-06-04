@@ -3,10 +3,19 @@ package repository;
 import models.Status;
 import models.enums.StatusEnum;
 import utils.DBConnection;
+import utils.LoggerConfig;
+
 
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class StatusRepository {
+
+    private static final Logger logger = Logger.getLogger(StatusRepository.class.getName());
+    static {
+        LoggerConfig.configureLogger(logger);
+    }
 
     public void insertStatus(Status status) {
         String sql = "INSERT INTO statuses (name) VALUES (?)";
@@ -18,7 +27,7 @@ public class StatusRepository {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при добавяне на статус", e);
         }
     }
 
@@ -33,7 +42,7 @@ public class StatusRepository {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при проверка на съществуващи статуси", e);
         }
         return false;
     }
@@ -69,7 +78,7 @@ public class StatusRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на статус по ID", e);
         }
 
         return null;
@@ -90,7 +99,7 @@ public class StatusRepository {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Грешка при извличане на статус по Enum", e);
         }
 
         return null;
