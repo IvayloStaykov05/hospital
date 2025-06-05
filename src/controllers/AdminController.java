@@ -8,6 +8,7 @@ import repository.DoctorRepository;
 import repository.PatientRepository;
 import repository.SpecialtyRepository;
 
+import java.io.File;
 import java.util.List;
 import java.util.Scanner;
 
@@ -16,10 +17,26 @@ public class AdminController {
     private final PatientRepository patientRepository = new PatientRepository();
     private final SpecialtyRepository specialtyRepository = new SpecialtyRepository();
 
-    private final String ADMIN_USERNAME = "";
-    private final String ADMIN_PASSWORD = "";
+    private String ADMIN_USERNAME;
+    private String ADMIN_PASSWORD;
 
-    //TODO: информацията за admin да се чете от файл
+    public AdminController() {
+        loadAdminCredentials();
+    }
+    private void loadAdminCredentials() {
+        try (Scanner fileScanner = new Scanner(new File("admin_credentials.txt"))) {
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                if (line.startsWith("username=")) {
+                    ADMIN_USERNAME = line.substring("username=".length()).trim();
+                } else if (line.startsWith("password=")) {
+                    ADMIN_PASSWORD = line.substring("password=".length()).trim();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Неуспешно зареждане на администраторските данни: " + e.getMessage());
+        }
+    }
     public void start(Scanner scanner) {
         System.out.println("\n=== Вход като Администратор ===");
 

@@ -6,6 +6,7 @@ import models.Patient;
 import models.enums.StatusEnum;
 import repository.AppointmentRepository;
 import repository.DoctorRepository;
+import utils.ValidationUtil;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,19 +24,27 @@ public class DoctorController {
         Doctor loggedDoctor = null;
 
         while (loggedDoctor == null) {
-            System.out.print("Въведете вашето ID: ");
-            int doctorId = Integer.parseInt(scanner.nextLine());
+            try {
+                System.out.print("Въведете вашето ID: ");
+                int doctorId = Integer.parseInt(scanner.nextLine());
 
-            System.out.print("Въведете вашето първо име: ");
-            String firstName = scanner.nextLine().trim();
+                System.out.print("Въведете вашето първо име: ");
+                String firstName = scanner.nextLine().trim();
+                if (!ValidationUtil.isValidName(firstName)) {
+                    System.out.println("Невалидно име.");
+                    continue;
+                }
 
-            System.out.print("Въведете парола: ");
-            String password = scanner.nextLine().trim();
+                System.out.print("Въведете парола: ");
+                String password = scanner.nextLine().trim();
 
-            loggedDoctor = doctorRepository.findByIdNameAndPassword(doctorId, firstName, password);
+                loggedDoctor = doctorRepository.findByIdNameAndPassword(doctorId, firstName, password);
 
-            if (loggedDoctor == null) {
-                System.out.println("Невалидни данни. Опитайте отново.");
+                if (loggedDoctor == null) {
+                    System.out.println("Невалидни данни. Опитайте отново.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("ID трябва да е число.");
             }
         }
 
@@ -43,6 +52,7 @@ public class DoctorController {
 
         showMenu(scanner, loggedDoctor);
     }
+
     private void showAppointmentsByStatus(Doctor doctor, StatusEnum statusEnum) {
         List<Appointment> appointments = appointmentRepository
                 .getAppointmentsByDoctorIdAndStatus(doctor.getId(), statusEnum);
@@ -104,6 +114,7 @@ public class DoctorController {
             }
         }
     }
+
     private void showMenu(Scanner scanner, Doctor doctor) {
         while (true) {
             System.out.println("\n=== Меню за Лекар ===");
@@ -112,53 +123,55 @@ public class DoctorController {
             System.out.println("3. Преглед на отменени часове");
             System.out.println("4. Преглед на всички часове за деня");
             System.out.println("5. Преглед на информация за пациентите през деня");
-            System.out.println("6. Добави нов пациент");
+            System.out.println("6. Отмени час");
             System.out.println("0. Назад към главното меню");
             System.out.print("Избор: ");
 
             String input = scanner.nextLine();
 
             switch (input) {
-                case "1":
-                    showAppointmentsByStatus(doctor, StatusEnum.UPCOMING);
-                    break;
-                case "2":
-                    showAppointmentsByStatus(doctor, StatusEnum.PAST);
-                    break;
-                case "3":
-                    showAppointmentsByStatus(doctor, StatusEnum.CANCELED);
-                    break;
-                case "4":
-                    showAppointmentsToday(doctor);
-                    break;
-                case "5":
-                    showTodayPatients(doctor);
-                    break;
-                case "0":
-                    break;
-                default:
-                    System.out.println("Невалиден избор. Опитайте отново.");
+                case "1": showAppointmentsByStatus(doctor, StatusEnum.UPCOMING); break;
+                case "2": showAppointmentsByStatus(doctor, StatusEnum.PAST); break;
+                case "3": showAppointmentsByStatus(doctor, StatusEnum.CANCELED); break;
+                case "4": showAppointmentsToday(doctor); break;
+                case "5": showTodayPatients(doctor); break;
+                case "6": cancelAppointmentByDoctor(scanner, doctor); break;
+                case "0": return;
+                default: System.out.println("Невалиден избор. Опитайте отново.");
             }
         }
     }
-    private void showAppointments(Patient patient) {
-        List<Appointment> appointments = appointmentRepository.getAppointmentsByPatientId(patient.getId());
 
-        if (appointments.isEmpty()) {
-            System.out.println("Нямате записани часове.");
+    private void cancelAppointmentByDoctor(Scanner scanner, Doctor doctor) {
+        List<Appointment> upcomingAppointments = appointmentRepository
+                .getAppointmentsByDoctorIdAndStatus(doctor.getId(), StatusEnum.UPCOMING);
+
+        if (upcomingAppointments.isEmpty()) {
+            System.out.println("Нямате предстоящи часове за отмяна.");
             return;
         }
 
-        appointments.sort((a1, a2) -> a1.getDateTime().compareTo(a2.getDateTime()));
+        System.out.println("\nПредстоящи часове:");
+        for (Appointment app : upcomingAppointments) {
+            System.out.println("Час ID: " + app.getId() +
+                    ", Пациент: " + app.getPatient().getFirstName() + " " + app.getPatient().getLastName() +
+                    ", Дата/час: " + app.getDateTime());
+        }
 
-        for (Appointment app : appointments) {
-            System.out.println("Час ID: " + app.getId());
-            System.out.println("Дата/час: " + app.getDateTime());
-            System.out.println("Лекар: " + app.getDoctor().getFirstName() + " " + app.getDoctor().getLastName());
-            System.out.println("Преглед: " + app.getExaminationType().getExaminationTypeEnum().getName());
-            System.out.println("Статус: " + app.getStatus().getStatusEnum().getName());
-            System.out.println("-------------------------");
+        System.out.print("Въведете ID на часа за отмяна: ");
+        try {
+            int appointmentId = Integer.parseInt(scanner.nextLine());
+
+            boolean found = upcomingAppointments.stream().anyMatch(a -> a.getId() == appointmentId);
+            if (!found) {
+                System.out.println("Невалидно ID. Няма такъв час сред предстоящите.");
+                return;
+            }
+
+            appointmentRepository.updateAppointmentStatus(appointmentId, StatusEnum.CANCELED);
+            System.out.println("Часът беше успешно отменен.");
+        } catch (NumberFormatException e) {
+            System.out.println("Моля, въведете валидно числово ID.");
         }
     }
-    // TODO: Доктора да отменя часовее
 }

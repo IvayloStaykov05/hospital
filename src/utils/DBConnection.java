@@ -1,15 +1,29 @@
 package utils;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
-    private static final String URL = "jdbc:mysql://localhost:3306/hospital";
-    private static final String USER = "root";
-    private static final String PASSWORD = "1234";
+    private static String URL;
+    private static String USER;
+    private static String PASSWORD;
 
-    //TODO: информацията за базата данни да се чете от файл
+    static {
+        try (FileInputStream fis = new FileInputStream("db.properties")) {
+            Properties props = new Properties();
+            props.load(fis);
+            URL = props.getProperty("db.url");
+            USER = props.getProperty("db.user");
+            PASSWORD = props.getProperty("db.password");
+        } catch (IOException e) {
+            throw new RuntimeException("Грешка при зареждане на конфигурацията за базата данни!", e);
+        }
+    }
+
 
     //private static Connection connection;
 
