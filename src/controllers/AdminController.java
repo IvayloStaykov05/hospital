@@ -7,6 +7,7 @@ import models.enums.SpecialtyEnum;
 import repository.DoctorRepository;
 import repository.PatientRepository;
 import repository.SpecialtyRepository;
+import utils.ValidationUtil;
 
 import java.io.File;
 import java.util.List;
@@ -23,6 +24,7 @@ public class AdminController {
     public AdminController() {
         loadAdminCredentials();
     }
+
     private void loadAdminCredentials() {
         try (Scanner fileScanner = new Scanner(new File("admin_credentials.txt"))) {
             while (fileScanner.hasNextLine()) {
@@ -37,6 +39,7 @@ public class AdminController {
             System.err.println("Неуспешно зареждане на администраторските данни: " + e.getMessage());
         }
     }
+
     public void start(Scanner scanner) {
         System.out.println("\n=== Вход като Администратор ===");
 
@@ -73,26 +76,14 @@ public class AdminController {
             String input = scanner.nextLine();
 
             switch (input) {
-                case "1":
-                    showAllDoctors();
-                    break;
-                case "2":
-                    addDoctor(scanner);
-                    break;
-                case "3":
-                    deleteDoctor(scanner);
-                    break;
-                case "4":
-                    showAllPatients();
-                    break;
-                case "5":
-                    editDoctor(scanner);
-                    break;
-                case "6":
-                    searchPatients(scanner);
-                    break;
-                case "0":
-                    return;
+                case "1": showAllDoctors(); break;
+                case "2": addDoctor(scanner); break;
+                case "3": deleteDoctor(scanner); break;
+                case "4": showAllPatients(); break;
+                case "5": editDoctor(scanner); break;
+                case "6": searchPatients(scanner); break;
+                case "7": addPatients(scanner); break;
+                case "0": return;
                 default: System.out.println("Невалиден избор.");
             }
         }
@@ -112,24 +103,57 @@ public class AdminController {
     }
 
     private void addDoctor(Scanner scanner) {
-        System.out.print("Име: ");
-        String firstName = scanner.nextLine();
-        System.out.print("Фамилия: ");
-        String lastName = scanner.nextLine();
-        System.out.print("Имейл: ");
-        String email = scanner.nextLine();
-        System.out.print("Телефон: ");
-        String phone = scanner.nextLine();
+        System.out.println("\n=== Добавяне на нов лекар ===");
+
+        String firstName;
+        do {
+            System.out.print("Име: ");
+            firstName = scanner.nextLine();
+            if (!ValidationUtil.isValidName(firstName)) {
+                System.out.println("Невалидно име. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidName(firstName));
+
+        String lastName;
+        do {
+            System.out.print("Фамилия: ");
+            lastName = scanner.nextLine();
+            if (!ValidationUtil.isValidName(lastName)) {
+                System.out.println("Невалидна фамилия. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidName(lastName));
+
+        String email;
+        do {
+            System.out.print("Имейл: ");
+            email = scanner.nextLine();
+            if (!ValidationUtil.isValidEmail(email)) {
+                System.out.println("Невалиден имейл. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidEmail(email));
+
+        String phone;
+        do {
+            System.out.print("Телефон: ");
+            phone = scanner.nextLine();
+            if (!ValidationUtil.isValidPhone(phone)) {
+                System.out.println("Невалиден телефон. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidPhone(phone));
 
         Specialty specialty = selectSpecialty(scanner);
         if (specialty == null) return;
 
-        System.out.print("Парола: ");
-        String password = scanner.nextLine();
+        String password;
+        do {
+            System.out.print("Парола: ");
+            password = scanner.nextLine();
+            if (!ValidationUtil.isValidPassword(password)) {
+                System.out.println("Паролата трябва да е поне 6 символа и да съдържа главна, малка буква и цифра. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidPassword(password));
 
         Doctor doctor = new Doctor(0, firstName, lastName, email, phone, specialty, password);
-        doctor.setPassword(password);
-
         doctorRepository.insertDoctor(doctor);
         System.out.println("Лекарят беше успешно добавен.");
     }
@@ -168,21 +192,22 @@ public class AdminController {
             System.out.println("Лекарят не е намерен.");
             return;
         }
+
         System.out.print("Ново име (" + doctor.getFirstName() + "): ");
         String input = scanner.nextLine();
-        if (!input.isBlank()) doctor.setFirstName(input);
+        if (!input.isBlank() && ValidationUtil.isValidName(input)) doctor.setFirstName(input);
 
         System.out.print("Нова фамилия (" + doctor.getLastName() + "): ");
         input = scanner.nextLine();
-        if (!input.isBlank()) doctor.setLastName(input);
+        if (!input.isBlank() && ValidationUtil.isValidName(input)) doctor.setLastName(input);
 
         System.out.print("Нов имейл (" + doctor.getEmail() + "): ");
         input = scanner.nextLine();
-        if (!input.isBlank()) doctor.setEmail(input);
+        if (!input.isBlank() && ValidationUtil.isValidEmail(input)) doctor.setEmail(input);
 
         System.out.print("Нов телефон (" + doctor.getPhoneNumber() + "): ");
         input = scanner.nextLine();
-        if (!input.isBlank()) doctor.setPhoneNumber(input);
+        if (!input.isBlank() && ValidationUtil.isValidPhone(input)) doctor.setPhoneNumber(input);
 
         System.out.println("Ако желаете да смените специалността, изберете от списъка. Ако не, натиснете Enter:");
         for (SpecialtyEnum s : SpecialtyEnum.values()) {
@@ -206,15 +231,11 @@ public class AdminController {
 
         System.out.print("Нова парола: ");
         input = scanner.nextLine();
-        if (!input.isBlank()){ doctor.setPassword(input);}
-        else{
-            doctor.setPassword(doctor.getPassword());
-        }
+        if (!input.isBlank() && ValidationUtil.isValidPassword(input)) doctor.setPassword(input);
 
         doctorRepository.updateDoctor(doctor);
         System.out.println("Лекарят беше обновен.");
     }
-
 
     private void searchPatients(Scanner scanner) {
         System.out.print("Въведете име или фамилия за търсене: ");
@@ -253,5 +274,72 @@ public class AdminController {
         }
 
         return new Specialty(choice, SpecialtyEnum.values()[choice - 1]);
+    }
+
+    public void addPatients(Scanner scanner) {
+        System.out.println("\n=== Добавяне на нов пациент ===");
+
+        String firstName;
+        do {
+            System.out.print("Име: ");
+            firstName = scanner.nextLine();
+            if (!ValidationUtil.isValidName(firstName)) {
+                System.out.println("Невалидно име. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidName(firstName));
+
+        String lastName;
+        do {
+            System.out.print("Фамилия: ");
+            lastName = scanner.nextLine();
+            if (!ValidationUtil.isValidName(lastName)) {
+                System.out.println("Невалидна фамилия. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidName(lastName));
+
+        int age = -1;
+        while (age < 0 || age > 120) {
+            System.out.print("Възраст: ");
+            try {
+                age = Integer.parseInt(scanner.nextLine());
+                if (!ValidationUtil.isValidAge(age)) {
+                    System.out.println("Невалидна възраст. Опитайте отново.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Моля, въведете валидна възраст.");
+            }
+        }
+
+        String email;
+        do {
+            System.out.print("Имейл: ");
+            email = scanner.nextLine();
+            if (!ValidationUtil.isValidEmail(email)) {
+                System.out.println("Невалиден имейл. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidEmail(email));
+
+        String phone;
+        do {
+            System.out.print("Телефон: ");
+            phone = scanner.nextLine();
+            if (!ValidationUtil.isValidPhone(phone)) {
+                System.out.println("Невалиден телефон. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidPhone(phone));
+
+        String password;
+        do {
+            System.out.print("Парола: ");
+            password = scanner.nextLine();
+            if (!ValidationUtil.isValidPassword(password)) {
+                System.out.println("Паролата трябва да е поне 6 символа и да съдържа главна, малка буква и цифра. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidPassword(password));
+
+        Patient newPatient = new Patient(0, firstName, lastName, email, phone, password, age);
+        patientRepository.insertPatient(newPatient);
+
+        System.out.println("Пациентът беше успешно добавен.");
     }
 }

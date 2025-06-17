@@ -35,7 +35,12 @@ public class PatientController {
 
         if (response.equals("не")) {
             loggedPatient = addPatient(scanner);
-            System.out.println("Успешна регистрация. Вече сте влезли като: " + loggedPatient.getFirstName());
+            if (loggedPatient != null) {
+                System.out.println("Успешна регистрация. Вече сте влезли като: " + loggedPatient.getFirstName());
+            } else {
+                System.out.println("Регистрацията се провали.");
+                return;
+            }
         } else {
             while (loggedPatient == null) {
                 try {
@@ -44,6 +49,10 @@ public class PatientController {
 
                     System.out.print("Въведете вашето първо име: ");
                     String firstName = scanner.nextLine().trim();
+                    if (!ValidationUtil.isValidName(firstName)) {
+                        System.out.println("Невалидно име.");
+                        continue;
+                    }
 
                     System.out.print("Въведете парола: ");
                     String password = scanner.nextLine().trim();
@@ -102,6 +111,75 @@ public class PatientController {
             System.out.println("Статус: " + app.getStatus().getStatusEnum().getName());
             System.out.println("-------------------------");
         }
+    }
+
+    private Patient addPatient(Scanner scanner) {
+        System.out.println("\n=== Добавяне на нов пациент ===");
+
+        String firstName;
+        do {
+            System.out.print("Име: ");
+            firstName = scanner.nextLine();
+            if (!ValidationUtil.isValidName(firstName)) {
+                System.out.println("Невалидно име. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidName(firstName));
+
+        String lastName;
+        do {
+            System.out.print("Фамилия: ");
+            lastName = scanner.nextLine();
+            if (!ValidationUtil.isValidName(lastName)) {
+                System.out.println("Невалидна фамилия. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidName(lastName));
+
+        int age = -1;
+        while (age < 0 || age > 120) {
+            System.out.print("Възраст: ");
+            try {
+                age = Integer.parseInt(scanner.nextLine());
+                if (!ValidationUtil.isValidAge(age)) {
+                    System.out.println("Невалидна възраст. Опитайте отново.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Моля, въведете валидна възраст.");
+            }
+        }
+
+        String email;
+        do {
+            System.out.print("Имейл: ");
+            email = scanner.nextLine();
+            if (!ValidationUtil.isValidEmail(email)) {
+                System.out.println("Невалиден имейл. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidEmail(email));
+
+        String phone;
+        do {
+            System.out.print("Телефон: ");
+            phone = scanner.nextLine();
+            if (!ValidationUtil.isValidPhone(phone)) {
+                System.out.println("Невалиден телефон. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidPhone(phone));
+
+        String password;
+        do {
+            System.out.print("Парола: ");
+            password = scanner.nextLine();
+            if (!ValidationUtil.isValidPassword(password)) {
+                System.out.println("Паролата трябва да е поне 6 символа и да съдържа главна, малка буква и цифра. Опитайте отново.");
+            }
+        } while (!ValidationUtil.isValidPassword(password));
+
+        Patient newPatient = new Patient(0, firstName, lastName, email, phone, password, age);
+        patientRepository.insertPatient(newPatient);
+
+        System.out.println("Пациентът беше успешно добавен.");
+
+        return newPatient;
     }
 
     private void bookAppointment(Scanner scanner, Patient patient) {
@@ -199,58 +277,5 @@ public class PatientController {
         } catch (NumberFormatException e) {
             System.out.println("ID трябва да е число.");
         }
-    }
-
-    private Patient addPatient(Scanner scanner) {
-        System.out.println("\n=== Добавяне на нов пациент ===");
-
-        System.out.print("Име: ");
-        String firstName = scanner.nextLine();
-        if (!ValidationUtil.isValidName(firstName)) {
-            System.out.println("Невалидно име.");
-            return null;
-        }
-
-        System.out.print("Фамилия: ");
-        String lastName = scanner.nextLine();
-        if (!ValidationUtil.isValidName(lastName)) {
-            System.out.println("Невалидна фамилия.");
-            return null;
-        }
-
-        System.out.print("Възраст: ");
-        int age = Integer.parseInt(scanner.nextLine());
-        if (age < 0 || age > 120) {
-            System.out.println("Невалидна възраст.");
-            return null;
-        }
-
-        System.out.print("Имейл: ");
-        String email = scanner.nextLine();
-        if (!ValidationUtil.isValidEmail(email)) {
-            System.out.println("Невалиден имейл.");
-            return null;
-        }
-
-        System.out.print("Телефон: ");
-        String phone = scanner.nextLine();
-        if (!ValidationUtil.isValidPhone(phone)) {
-            System.out.println("Невалиден телефон.");
-            return null;
-        }
-
-        System.out.print("Парола: ");
-        String password = scanner.nextLine();
-        if (password.length() < 6) {
-            System.out.println("Паролата трябва да е поне 6 символа.");
-            return null;
-        }
-
-        Patient newPatient = new Patient(0, firstName, lastName, email, phone, password, age);
-        patientRepository.insertPatient(newPatient);
-
-        System.out.println("Пациентът беше успешно добавен.");
-
-        return newPatient;
     }
 }

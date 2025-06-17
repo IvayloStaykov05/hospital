@@ -13,7 +13,7 @@ public class DBConnection {
     private static String PASSWORD;
 
     static {
-        try (FileInputStream fis = new FileInputStream("db.properties")) {
+        try (FileInputStream fis = new FileInputStream("C:\\Users\\Ивайло Стайков\\hospital\\src\\db.properties")) {
             Properties props = new Properties();
             props.load(fis);
             URL = props.getProperty("db.url");
