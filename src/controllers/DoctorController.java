@@ -1,8 +1,9 @@
 package controllers;
 
+import commands.Command;
+import commands.doctor.DoctorMenuCommandFactory;
 import models.Appointment;
 import models.Doctor;
-import models.Patient;
 import models.enums.StatusEnum;
 import repository.AppointmentRepository;
 import repository.DoctorRepository;
@@ -53,7 +54,7 @@ public class DoctorController {
         showMenu(scanner, loggedDoctor);
     }
 
-    private void showAppointmentsByStatus(Doctor doctor, StatusEnum statusEnum) {
+    public void showAppointmentsByStatus(Doctor doctor, StatusEnum statusEnum) {
         List<Appointment> appointments = appointmentRepository
                 .getAppointmentsByDoctorIdAndStatus(doctor.getId(), statusEnum);
 
@@ -72,7 +73,7 @@ public class DoctorController {
         }
     }
 
-    private void showAppointmentsToday(Doctor doctor) {
+    public void showAppointmentsToday(Doctor doctor) {
         List<Appointment> appointments = appointmentRepository.getAppointmentsForTodayByDoctorId(doctor.getId());
 
         if (appointments.isEmpty()) {
@@ -90,7 +91,7 @@ public class DoctorController {
         }
     }
 
-    private void showTodayPatients(Doctor doctor) {
+    public void showTodayPatients(Doctor doctor) {
         List<Appointment> appointments = appointmentRepository.getAppointmentsForTodayByDoctorId(doctor.getId());
 
         if (appointments.isEmpty()) {
@@ -116,6 +117,8 @@ public class DoctorController {
     }
 
     private void showMenu(Scanner scanner, Doctor doctor) {
+        DoctorMenuCommandFactory factory = new DoctorMenuCommandFactory(this, scanner, doctor);
+
         while (true) {
             System.out.println("\n=== Меню за Лекар ===");
             System.out.println("1. Преглед на предстоящи часове");
@@ -129,20 +132,20 @@ public class DoctorController {
 
             String input = scanner.nextLine();
 
-            switch (input) {
-                case "1": showAppointmentsByStatus(doctor, StatusEnum.UPCOMING); break;
-                case "2": showAppointmentsByStatus(doctor, StatusEnum.PAST); break;
-                case "3": showAppointmentsByStatus(doctor, StatusEnum.CANCELED); break;
-                case "4": showAppointmentsToday(doctor); break;
-                case "5": showTodayPatients(doctor); break;
-                case "6": cancelAppointmentByDoctor(scanner, doctor); break;
-                case "0": return;
-                default: System.out.println("Невалиден избор. Опитайте отново.");
+            if ("0".equals(input)) {
+                return;
+            }
+
+            Command command = factory.getCommand(input);
+            if (command != null) {
+                command.execute();
+            } else {
+                System.out.println("Невалиден избор. Опитайте отново.");
             }
         }
     }
 
-    private void cancelAppointmentByDoctor(Scanner scanner, Doctor doctor) {
+    public void cancelAppointmentByDoctor(Scanner scanner, Doctor doctor) {
         List<Appointment> upcomingAppointments = appointmentRepository
                 .getAppointmentsByDoctorIdAndStatus(doctor.getId(), StatusEnum.UPCOMING);
 

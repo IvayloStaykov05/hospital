@@ -1,11 +1,18 @@
 package controllers;
 
+import commands.Command;
+import commands.patient.PatientMenuCommandFactory;
 import models.Appointment;
 import models.Doctor;
+import models.ExaminationType;
 import models.Patient;
 import models.enums.ExaminationTypeEnum;
 import models.enums.StatusEnum;
-import repository.*;
+import repository.AppointmentRepository;
+import repository.DoctorRepository;
+import repository.ExaminationTypeRepository;
+import repository.PatientRepository;
+import repository.StatusRepository;
 import utils.ValidationUtil;
 
 import java.time.LocalDateTime;
@@ -14,11 +21,12 @@ import java.util.List;
 import java.util.Scanner;
 
 public class PatientController {
+
     private final PatientRepository patientRepository = new PatientRepository();
-    private final DoctorRepository doctorRepository = new DoctorRepository();
     private final AppointmentRepository appointmentRepository = new AppointmentRepository();
-    private final StatusRepository statusRepository = new StatusRepository();
+    private final DoctorRepository doctorRepository = new DoctorRepository();
     private final ExaminationTypeRepository examinationTypeRepository = new ExaminationTypeRepository();
+    private final StatusRepository statusRepository = new StatusRepository();
 
     public void start(Scanner scanner) {
         System.out.println("\n=== Вход като Пациент ===");
@@ -72,6 +80,8 @@ public class PatientController {
     }
 
     private void showMenu(Scanner scanner, Patient patient) {
+        PatientMenuCommandFactory factory = new PatientMenuCommandFactory(this, scanner, patient);
+
         while (true) {
             System.out.println("\n=== Меню за Пациент ===");
             System.out.println("1. Преглед на записани часове");
@@ -83,18 +93,20 @@ public class PatientController {
 
             String input = scanner.nextLine();
 
-            switch (input) {
-                case "1": showAppointments(patient); break;
-                case "2": bookAppointment(scanner, patient); break;
-                case "3": updateAppointment(scanner); break;
-                case "4": cancelAppointment(scanner); break;
-                case "0": return;
-                default: System.out.println("Невалиден избор.");
+            if ("0".equals(input)) {
+                return;
+            }
+
+            Command command = factory.getCommand(input);
+            if (command != null) {
+                command.execute();
+            } else {
+                System.out.println("Невалиден избор.");
             }
         }
     }
 
-    private void showAppointments(Patient patient) {
+    public void showAppointments(Patient patient) {
         List<Appointment> appointments = appointmentRepository.getAppointmentsByPatientId(patient.getId());
         if (appointments.isEmpty()) {
             System.out.println("Нямате записани часове.");
@@ -182,7 +194,7 @@ public class PatientController {
         return newPatient;
     }
 
-    private void bookAppointment(Scanner scanner, Patient patient) {
+    public void bookAppointment(Scanner scanner, Patient patient) {
         try {
             System.out.print("Въведете ID на лекар: ");
             int doctorId = Integer.parseInt(scanner.nextLine());
@@ -231,7 +243,7 @@ public class PatientController {
         }
     }
 
-    private void updateAppointment(Scanner scanner) {
+    public void updateAppointment(Scanner scanner) {
         try {
             System.out.print("Въведете ID на часа, който искате да промените: ");
             int appointmentId = Integer.parseInt(scanner.nextLine());
@@ -262,7 +274,7 @@ public class PatientController {
         }
     }
 
-    private void cancelAppointment(Scanner scanner) {
+    public void cancelAppointment(Scanner scanner) {
         try {
             System.out.print("Въведете ID на часа, който искате да отмените: ");
             int appointmentId = Integer.parseInt(scanner.nextLine());

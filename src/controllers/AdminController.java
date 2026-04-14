@@ -1,5 +1,7 @@
 package controllers;
 
+import commands.Command;
+import commands.admin.AdminMenuCommandFactory;
 import models.Doctor;
 import models.Patient;
 import models.Specialty;
@@ -61,6 +63,8 @@ public class AdminController {
     }
 
     private void showMenu(Scanner scanner) {
+        AdminMenuCommandFactory factory = new AdminMenuCommandFactory(this, scanner);
+
         while (true) {
             System.out.println("\n=== Администраторско меню ===");
             System.out.println("1. Виж всички лекари");
@@ -68,28 +72,26 @@ public class AdminController {
             System.out.println("3. Изтрий лекар");
             System.out.println("4. Виж всички пациенти");
             System.out.println("5. Промени данни за лекар");
-            System.out.println("6. Търси пациент по име");
-            System.out.println("7. Добави нов пациент");
+            System.out.println("6. Добави нов пациент");
             System.out.println("0. Изход");
             System.out.print("Избор: ");
 
             String input = scanner.nextLine();
 
-            switch (input) {
-                case "1": showAllDoctors(); break;
-                case "2": addDoctor(scanner); break;
-                case "3": deleteDoctor(scanner); break;
-                case "4": showAllPatients(); break;
-                case "5": editDoctor(scanner); break;
-                case "6": searchPatients(scanner); break;
-                case "7": addPatients(scanner); break;
-                case "0": return;
-                default: System.out.println("Невалиден избор.");
+            if ("0".equals(input)) {
+                return;
+            }
+
+            Command command = factory.getCommand(input);
+            if (command != null) {
+                command.execute();
+            } else {
+                System.out.println("Невалиден избор.");
             }
         }
     }
 
-    private void showAllDoctors() {
+    public void showAllDoctors() {
         List<Doctor> doctors = doctorRepository.getAllDoctors();
         if (doctors.isEmpty()) {
             System.out.println("Няма налични лекари.");
@@ -102,7 +104,7 @@ public class AdminController {
         }
     }
 
-    private void addDoctor(Scanner scanner) {
+    public void addDoctor(Scanner scanner) {
         System.out.println("\n=== Добавяне на нов лекар ===");
 
         String firstName;
@@ -158,7 +160,7 @@ public class AdminController {
         System.out.println("Лекарят беше успешно добавен.");
     }
 
-    private void deleteDoctor(Scanner scanner) {
+    public void deleteDoctor(Scanner scanner) {
         System.out.print("ID на лекаря за изтриване: ");
         int id = Integer.parseInt(scanner.nextLine());
 
@@ -172,7 +174,7 @@ public class AdminController {
         System.out.println("Лекарят беше изтрит.");
     }
 
-    private void showAllPatients() {
+    public void showAllPatients() {
         List<Patient> patients = patientRepository.getAllPatients();
         if (patients.isEmpty()) {
             System.out.println("Няма пациенти.");
@@ -184,7 +186,7 @@ public class AdminController {
         }
     }
 
-    private void editDoctor(Scanner scanner) {
+    public void editDoctor(Scanner scanner) {
         System.out.print("ID на лекаря за редакция: ");
         int id = Integer.parseInt(scanner.nextLine());
         Doctor doctor = doctorRepository.getDoctorById(id);
@@ -219,39 +221,17 @@ public class AdminController {
             try {
                 int choice = Integer.parseInt(input);
                 if (choice >= 1 && choice <= SpecialtyEnum.values().length) {
-                    SpecialtyEnum selected = SpecialtyEnum.values()[choice - 1];
-                    doctor.setSpecialty(new Specialty(choice, selected));
+                    doctor.setSpecialty(new Specialty(choice, SpecialtyEnum.values()[choice - 1]));
                 } else {
-                    System.out.println("Невалиден избор. Специалността остава старата.");
+                    System.out.println("Невалиден избор за специалност. Запазва се старата.");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Невалиден формат. Специалността остава старата.");
+                System.out.println("Невалиден вход за специалност. Запазва се старата.");
             }
         }
 
-        System.out.print("Нова парола: ");
-        input = scanner.nextLine();
-        if (!input.isBlank() && ValidationUtil.isValidPassword(input)) doctor.setPassword(input);
-
         doctorRepository.updateDoctor(doctor);
-        System.out.println("Лекарят беше обновен.");
-    }
-
-    private void searchPatients(Scanner scanner) {
-        System.out.print("Въведете име или фамилия за търсене: ");
-        String keyword = scanner.nextLine().trim().toLowerCase();
-
-        List<Patient> matches = patientRepository.getAllPatients().stream()
-                .filter(p -> p.getFirstName().toLowerCase().contains(keyword)
-                        || p.getLastName().toLowerCase().contains(keyword))
-                .toList();
-
-        if (matches.isEmpty()) {
-            System.out.println("Няма пациенти с такова име.");
-        } else {
-            matches.forEach(p -> System.out.printf("ID: %d | %s %s | Имейл: %s\n",
-                    p.getId(), p.getFirstName(), p.getLastName(), p.getEmail()));
-        }
+        System.out.println("Данните за лекаря са успешно обновени.");
     }
 
     private Specialty selectSpecialty(Scanner scanner) {
